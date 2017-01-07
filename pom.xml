@@ -40,6 +40,7 @@ Contributors:
     </licenses>
 
     <modules>
+        <module>client</module>
         <module>leshan-core</module>
         <module>leshan-server-core</module>
         <module>leshan-server-cf</module>
