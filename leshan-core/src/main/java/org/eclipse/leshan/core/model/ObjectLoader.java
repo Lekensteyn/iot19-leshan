@@ -54,7 +54,7 @@ public class ObjectLoader {
 
         // standard objects
         LOG.debug("Loading OMA standard object models");
-        InputStream input = ObjectLoader.class.getResourceAsStream("/oma-objects-spec.json");
+        InputStream input = ObjectLoader.class.getResourceAsStream("/resources/oma-objects-spec.json");
         if (input != null) {
             try (Reader reader = new InputStreamReader(input)) {
                 models.addAll(loadJsonStream(input));
