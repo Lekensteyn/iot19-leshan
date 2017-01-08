@@ -34,7 +34,12 @@ public class Client {
 
 	private static void loadSpec(List<ObjectModel> models, String resourceName) {
 		InputStream input = ObjectLoader.class.getResourceAsStream(resourceName);
+		if (input == null) {
+			resourceName = "/resources" + resourceName;
+			input = ObjectLoader.class.getResourceAsStream(resourceName);
+		}
 		if (input != null) {
+			LOG.info("Loading specification from " + resourceName);
 			models.addAll(ObjectLoader.loadJsonStream(input));
 		} else {
 			LOG.error("Unable to load resource: " + resourceName);
@@ -44,8 +49,8 @@ public class Client {
 	public static void createClient(String endpoint, String serverURI) {
 		// Load LWM2M specs (include default OMA objects for Firmware profile)
 		List<ObjectModel> models = new ArrayList<>();
-		loadSpec(models, "/resources/oma-objects-spec.json");
-		loadSpec(models, "/resources/light-object-spec.json");
+		loadSpec(models, "/oma-objects-spec.json");
+		loadSpec(models, "/light-object-spec.json");
 		LwM2mModel model = new LwM2mModel(models);
 		ObjectsInitializer initializer = new ObjectsInitializer(model);
 
