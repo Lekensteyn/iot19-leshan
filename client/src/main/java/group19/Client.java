@@ -105,6 +105,7 @@ public class Client {
 		List<ObjectModel> models = new ArrayList<>();
 		loadSpec(models, "/oma-objects-spec.json");
 		loadSpec(models, "/light-object-spec.json");
+		loadSpec(models, "/sensor-object-spec.json");
 		LwM2mModel model = new LwM2mModel(models);
 		ObjectsInitializer initializer = new ObjectsInitializer(model);
 
@@ -117,8 +118,7 @@ public class Client {
 
 		// register other Objects by their ID
 		if (isSensor) {
-			// TODO implement new SensorDevice class
-			//initializer.setClassForObject(SENSOR_PROFILE_ID, SensorDevice.class);
+		    initializer.setClassForObject(SENSOR_PROFILE_ID, SensorDevice.class);
 		} else {
 			initializer.setInstancesForObject(LIGHT_PROFILE_ID, new LightDevice(endpoint));
 		}
