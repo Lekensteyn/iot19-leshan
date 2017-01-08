@@ -1,21 +1,28 @@
 package group19;
 
+import java.io.IOException;
+
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import group19.FirmwareUpdate.UpdateType;
 
 public class LightDevice extends BaseInstanceEnabler {
+
+	private final static Logger LOG = LoggerFactory.getLogger(LightDevice.class);
+
 	private String lightId = "";
 	private String deviceType = "Light Device";
 	private LightState lightState = LightState.FREE;
 	private UserType userType = UserType.USER3;
 	private String userId = "";
-	private String lightColor = "";
+	private RGBColor lightColor = new RGBColor(255, 255, 255);
 	private boolean lowLight;
 	private long groupNo;
 	private double locationX;
@@ -25,11 +32,27 @@ public class LightDevice extends BaseInstanceEnabler {
 
 	private FirmwareUpdate lightBehaviorFirmwareUpdate;
 	private FirmwareUpdate ownershipFirmwareUpdate;
+	private LightProvider realDevice;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
 		this.lightBehaviorFirmwareUpdate = new FirmwareUpdate(UpdateType.LIGHT_BEHAVIOR, this);
 		this.ownershipFirmwareUpdate = new FirmwareUpdate(UpdateType.OWNERSHIP_PRIORITY, this);
+
+		final RPiLightDevice realDevice = new RPiLightDevice();
+		try {
+			realDevice.start();
+			this.realDevice = realDevice;
+			// yep, nasty, there is probably a better place to add this.
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					realDevice.destroy();
+				}
+			});
+		} catch (IOException e) {
+			LOG.error("Failed to start light device controller, state will not be updated!", e);
+		}
 	}
 
 	@Override
@@ -46,7 +69,7 @@ public class LightDevice extends BaseInstanceEnabler {
 		case 4:
 			return ReadResponse.success(resourceid, userId);
 		case 5:
-			return ReadResponse.success(resourceid, lightColor);
+			return ReadResponse.success(resourceid, lightColor.toString());
 		case 6:
 			return ReadResponse.success(resourceid, lowLight);
 		case 7:
