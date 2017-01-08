@@ -119,6 +119,20 @@ public class LightDevice extends BaseInstanceEnabler {
 			userId = (String) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
+		case 5: /* Light Color */
+			try {
+				lightColor = new RGBColor((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
+			realDevice.setColor(lightColor.r, lightColor.g, lightColor.b);
+			fireResourcesChange(resourceid);
+			return WriteResponse.success();
+		case 6: /* Low Light mode */
+			lowLight = (boolean) value.getValue();
+			realDevice.setLowLightMode(lowLight);
+			fireResourcesChange(resourceid);
+			return WriteResponse.success();
 		case 7:
 			groupNo = (long) value.getValue();
 			fireResourcesChange(resourceid);

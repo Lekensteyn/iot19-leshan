@@ -64,7 +64,7 @@
       {
         "id": 5,
         "name": "Light Color",
-        "operations": "R",
+        "operations": "RW",
         "instancetype": "single",
         "mandatory": true,
         "type": "string",
@@ -75,7 +75,7 @@
       {
         "id": 6,
         "name": "Low Light",
-        "operations": "R",
+        "operations": "RW",
         "instancetype": "single",
         "mandatory": true,
         "type": "boolean",
