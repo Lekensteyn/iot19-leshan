@@ -27,6 +27,17 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Light State",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
       }
     ]
   }

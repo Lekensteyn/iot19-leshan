@@ -9,7 +9,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class LightDevice extends BaseInstanceEnabler {
 	private String lightId;
 	private String deviceType;
-	private String lightState;
+	private LightState lightState = LightState.FREE;
 	private String userType;
 	private String userId;
 	private String lightColor;
@@ -19,7 +19,7 @@ public class LightDevice extends BaseInstanceEnabler {
 	private float locationY;
 	private String roomId;
 	private String behaviorDeployment;
-	
+
 	@Override
 	public ReadResponse read(int resourceid) {
 		switch (resourceid) {
@@ -28,7 +28,7 @@ public class LightDevice extends BaseInstanceEnabler {
 		case 1:
 			return ReadResponse.success(resourceid, deviceType);
 		case 2:
-			return ReadResponse.success(resourceid, lightState);
+			return ReadResponse.success(resourceid, lightState.name());
 		case 3:
 			return ReadResponse.success(resourceid, userType);
 		case 4:
@@ -46,8 +46,8 @@ public class LightDevice extends BaseInstanceEnabler {
 		case 10:
 			return ReadResponse.success(resourceid, roomId);
 		case 11:
-			return ReadResponse.success(resourceid, behaviorDeployment );
-			
+			return ReadResponse.success(resourceid, behaviorDeployment);
+
 		default:
 			return super.read(resourceid);
 		}
@@ -63,7 +63,11 @@ public class LightDevice extends BaseInstanceEnabler {
 			deviceType = (String) value.getValue();
 			return WriteResponse.success();
 		case 2:
-			lightState = (String) value.getValue();
+			try {
+				lightState = LightState.valueOf((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		case 3:
 			userType = (String) value.getValue();
@@ -97,5 +101,9 @@ public class LightDevice extends BaseInstanceEnabler {
 		default:
 			return super.execute(resourceid, params);
 		}
+	}
+	
+	enum LightState {
+		USED, FREE
 	}
 }
