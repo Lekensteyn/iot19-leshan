@@ -11,9 +11,9 @@ public class SensorDevice extends BaseInstanceEnabler {
 	private String deviceType = "Sensor Device";
 	private SensorState sensorState = SensorState.FREE;
 	private String userId = "";
-	private int groupNo;
-	private float locationX;
-	private float locationY;
+	private long groupNo;
+	private double locationX;
+	private double locationY;
 	private String roomId = "";
 
 	public SensorDevice(String sensorId) {
@@ -69,15 +69,15 @@ public class SensorDevice extends BaseInstanceEnabler {
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 4:
-			groupNo = (int) value.getValue();
+			groupNo = (long) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 5:
-			locationX = (float) value.getValue();
+			locationX = (double) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 6:
-			locationY = (float) value.getValue();
+			locationY = (double) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
