@@ -120,7 +120,7 @@ public class Client {
 			// TODO implement new SensorDevice class
 			//initializer.setClassForObject(SENSOR_PROFILE_ID, SensorDevice.class);
 		} else {
-			initializer.setClassForObject(LIGHT_PROFILE_ID, LightDevice.class);
+			initializer.setInstancesForObject(LIGHT_PROFILE_ID, new LightDevice(endpoint));
 		}
 
 		// creates the Object Instances

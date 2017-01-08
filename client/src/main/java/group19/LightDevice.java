@@ -8,9 +8,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public class LightDevice extends BaseInstanceEnabler {
 	private String lightId = "";
-	private String deviceType="";
+	private String deviceType = "Light Device";
 	private LightState lightState = LightState.FREE;
-	private UserType userType = UserType.USER3; 
+	private UserType userType = UserType.USER3;
 	private String userId;
 	private String lightColor;
 	private boolean lowLight;
@@ -18,7 +18,11 @@ public class LightDevice extends BaseInstanceEnabler {
 	private float locationX;
 	private float locationY;
 	private String roomId;
-	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.DISTRIBUTED;
+	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
+
+	public LightDevice(String lightId) {
+		this.lightId = lightId;
+	}
 
 	@Override
 	public ReadResponse read(int resourceid) {
@@ -110,16 +114,19 @@ public class LightDevice extends BaseInstanceEnabler {
 			return super.execute(resourceid, params);
 		}
 	}
-	//represents the state of the light device
+
+	// represents the state of the light device
 	enum LightState {
 		USED, FREE
 	}
-	//stating which lighting behavior deployment is used
+
+	// stating which lighting behavior deployment is used
 	enum BehaviorDeployment {
-		BROKER, DISTRIBUTED
+		Broker, Distributed
 	}
+
 	enum UserType {
 		USER1, USER2, USER3
 	}
-	
+
 }
