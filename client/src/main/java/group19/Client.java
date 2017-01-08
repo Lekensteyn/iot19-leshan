@@ -120,7 +120,12 @@ public class Client {
 		if (isSensor) {
 		    initializer.setClassForObject(SENSOR_PROFILE_ID, SensorDevice.class);
 		} else {
-			initializer.setInstancesForObject(LIGHT_PROFILE_ID, new LightDevice(endpoint));
+			LightDevice dev = new LightDevice(endpoint);
+			initializer.setInstancesForObject(LIGHT_PROFILE_ID, dev);
+			// TODO somehow multiple instances are not working, only ownership
+			// is available
+			initializer.setInstancesForObject(LwM2mId.FIRMWARE, dev.getLightFirmareUpdate());
+			initializer.setInstancesForObject(LwM2mId.FIRMWARE, dev.getOwnershipFirmwareUpdate());
 		}
 
 		// creates the Object Instances
