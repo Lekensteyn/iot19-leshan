@@ -62,9 +62,11 @@ public class LightDevice extends BaseInstanceEnabler {
 		switch (resourceid) {
 		case 0:
 			lightId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 1:
 			deviceType = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 2:
 			try {
@@ -72,6 +74,7 @@ public class LightDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 3:
 			try {
@@ -79,21 +82,27 @@ public class LightDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 4:
 			userId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
 			groupNo = (int) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 8:
 			locationX = (float) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 9:
 			locationY = (float) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 10:
 			roomId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 11:
 			try {
