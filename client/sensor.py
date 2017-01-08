@@ -7,6 +7,7 @@ import sys
 import time
 
 try:
+    sys.path.insert(0, "/home/pi/reference/pi_code/webcam_face_detection")
     from pyimagesearch.facedetector import FaceDetector
     from pyimagesearch import imutils
     from picamera.array import PiRGBArray
