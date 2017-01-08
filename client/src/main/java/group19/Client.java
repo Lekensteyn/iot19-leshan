@@ -119,7 +119,7 @@ public class Client {
 		// register other Objects by their ID
 		if (isSensor) {
 			SensorDevice dev = new SensorDevice(endpoint);
-		    initializer.setInstancesForObject(SENSOR_PROFILE_ID, dev);
+			initializer.setInstancesForObject(SENSOR_PROFILE_ID, dev);
 		} else {
 			LightDevice dev = new LightDevice(endpoint);
 			initializer.setInstancesForObject(LIGHT_PROFILE_ID, dev);

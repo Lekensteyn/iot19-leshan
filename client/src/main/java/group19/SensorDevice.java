@@ -1,12 +1,19 @@
 package group19;
 
+import java.io.IOException;
+
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SensorDevice extends BaseInstanceEnabler {
+public class SensorDevice extends BaseInstanceEnabler implements SensorChangeListener {
+
+	private final static Logger LOG = LoggerFactory.getLogger(SensorDevice.class);
+
 	private String sensorId;
 	private String deviceType = "Sensor Device";
 	private SensorState sensorState = SensorState.FREE;
@@ -15,9 +22,28 @@ public class SensorDevice extends BaseInstanceEnabler {
 	private double locationX;
 	private double locationY;
 	private String roomId = "";
+	private RPiSensorDevice realDevice;
 
 	public SensorDevice(String sensorId) {
 		this.sensorId = sensorId;
+		realDevice = new RPiSensorDevice(this);
+		try {
+			realDevice.start();
+		} catch (IOException e) {
+			LOG.error("Failed to start sensor watcher, state will not be updated!", e);
+			realDevice = null;
+		}
+
+		if (realDevice != null) {
+			new Thread(realDevice).start();
+			// yep, nasty, there is probably a better place to add this.
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					realDevice.destroy();
+				}
+			});
+		}
 	}
 
 	@Override
@@ -94,6 +120,15 @@ public class SensorDevice extends BaseInstanceEnabler {
 		switch (resourceid) {
 		default:
 			return super.execute(resourceid, params);
+		}
+	}
+
+	@Override
+	public void sensorChanged(boolean inUse) {
+		SensorState sensorState = inUse ? SensorState.USED : SensorState.FREE;
+		if (this.sensorState != sensorState) {
+			this.sensorState = sensorState;
+			fireResourcesChange(2);
 		}
 	}
 
