@@ -17,7 +17,7 @@ public class LightDevice extends BaseInstanceEnabler {
 	private String userId = "";
 	private String lightColor = "";
 	private boolean lowLight;
-	private int groupNo;
+	private long groupNo;
 	private double locationX;
 	private double locationY;
 	private String roomId = "";
@@ -97,7 +97,7 @@ public class LightDevice extends BaseInstanceEnabler {
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
-			groupNo = (int) value.getValue();
+			groupNo = (long) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 8:
