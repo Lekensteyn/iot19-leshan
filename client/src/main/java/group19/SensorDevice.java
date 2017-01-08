@@ -7,7 +7,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 public class SensorDevice extends BaseInstanceEnabler {
-	private String sensorId = "";
+	private String sensorId;
 	private String deviceType = "Sensor Device";
 	private SensorState sensorState = SensorState.FREE;
 	private String userId = "";
@@ -15,6 +15,10 @@ public class SensorDevice extends BaseInstanceEnabler {
 	private float locationX;
 	private float locationY;
 	private String roomId = "";
+
+	public SensorDevice(String sensorId) {
+		this.sensorId = sensorId;
+	}
 
 	@Override
 	public ReadResponse read(int resourceid) {
