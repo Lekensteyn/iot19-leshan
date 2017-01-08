@@ -46,9 +46,11 @@ public class SensorDevice extends BaseInstanceEnabler {
 		switch (resourceid) {
 		case 0:
 			sensorId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 1:
 			deviceType = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 2:
 			try {
@@ -56,21 +58,27 @@ public class SensorDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 3:
 			userId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 4:
 			groupNo = (int) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 5:
 			locationX = (float) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 6:
 			locationY = (float) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
 			roomId = (String) value.getValue();
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);

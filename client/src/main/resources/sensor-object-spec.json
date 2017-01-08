@@ -1,0 +1,99 @@
+[
+  {
+    "name": "Sensor Profile",
+    "id": 10350,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Sensor ID",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Device Type",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Sensor State",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "User ID",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Group No",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Location X",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "float",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Location Y",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "float",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Room ID",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  }
+]

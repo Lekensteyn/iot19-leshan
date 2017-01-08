@@ -1,10 +1,13 @@
 package group19;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+
+import group19.FirmwareUpdate.UpdateType;
 
 public class LightDevice extends BaseInstanceEnabler {
 	private String lightId = "";
@@ -20,8 +23,13 @@ public class LightDevice extends BaseInstanceEnabler {
 	private String roomId = "";
 	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
 
+	private FirmwareUpdate lightBehaviorFirmwareUpdate;
+	private FirmwareUpdate ownershipFirmwareUpdate;
+
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
+		this.lightBehaviorFirmwareUpdate = new FirmwareUpdate(UpdateType.LIGHT_BEHAVIOR, this);
+		this.ownershipFirmwareUpdate = new FirmwareUpdate(UpdateType.OWNERSHIP_PRIORITY, this);
 	}
 
 	@Override
@@ -136,6 +144,14 @@ public class LightDevice extends BaseInstanceEnabler {
 
 	enum UserType {
 		USER1, USER2, USER3
+	}
+
+	public LwM2mInstanceEnabler getLightFirmareUpdate() {
+		return lightBehaviorFirmwareUpdate;
+	}
+
+	public LwM2mInstanceEnabler getOwnershipFirmwareUpdate() {
+		return ownershipFirmwareUpdate;
 	}
 
 }
