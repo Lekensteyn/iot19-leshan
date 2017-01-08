@@ -118,6 +118,7 @@ public class LightDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
+			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);
