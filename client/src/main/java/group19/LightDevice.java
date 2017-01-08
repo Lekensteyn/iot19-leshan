@@ -18,8 +18,8 @@ public class LightDevice extends BaseInstanceEnabler {
 	private String lightColor = "";
 	private boolean lowLight;
 	private int groupNo;
-	private float locationX;
-	private float locationY;
+	private double locationX;
+	private double locationY;
 	private String roomId = "";
 	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
 
@@ -101,11 +101,11 @@ public class LightDevice extends BaseInstanceEnabler {
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 8:
-			locationX = (float) value.getValue();
+			locationX = (double) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 9:
-			locationY = (float) value.getValue();
+			locationY = (double) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 10:
