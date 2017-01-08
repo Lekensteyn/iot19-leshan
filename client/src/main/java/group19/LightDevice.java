@@ -11,13 +11,13 @@ public class LightDevice extends BaseInstanceEnabler {
 	private String deviceType = "Light Device";
 	private LightState lightState = LightState.FREE;
 	private UserType userType = UserType.USER3;
-	private String userId;
-	private String lightColor;
+	private String userId = "";
+	private String lightColor = "";
 	private boolean lowLight;
 	private int groupNo;
 	private float locationX;
 	private float locationY;
-	private String roomId;
+	private String roomId = "";
 	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
 
 	public LightDevice(String lightId) {
