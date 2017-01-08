@@ -38,6 +38,105 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 3,
+        "name": "User Type",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "User ID",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Light Color",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Low Light",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Group No",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "Location X",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "float",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 9,
+        "name": "Location Y",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "float",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 10,
+        "name": "Room ID",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 11,
+        "name": "Behavior Deployment",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
       }
     ]
   }
