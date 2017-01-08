@@ -16,20 +16,74 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.eclipse.leshan.LwM2mId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Client {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Client.class);
+	private final static Logger LOG = LoggerFactory.getLogger(Client.class);
+	private final static String USAGE = "java -jar client.jar [OPTIONS]";
 
 	public final static int LIGHT_PROFILE_ID = 10250;
 	public final static int SENSOR_PROFILE_ID = 10350;
 
+	// TODO move this to some other configuration class?
+	private final static int GROUP_NO = 19;
+
 	public static void main(String[] args) {
+		// Define options for command line tools
+		Options options = new Options();
+		options.addOption("h", "help", false, "Display help information.");
+		options.addOption("u", "server", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
+		options.addOption("t", "type", true, "Set the device type (light or sensor).\nDefault: light.");
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.setOptionComparator(null);
+
+		// Parse arguments
+		CommandLine cl = null;
+		try {
+			cl = new DefaultParser().parse(options, args);
+		} catch (ParseException e) {
+			System.err.println("Parsing failed.  Reason: " + e.getMessage());
+			formatter.printHelp(USAGE, options);
+			return;
+		}
+
+		// Print help
+		if (cl.hasOption("help")) {
+			formatter.printHelp(USAGE, options);
+			return;
+		}
+
+		// Get server URI
 		String serverURI = "coap://localhost:5683";
-		createClient("light", serverURI);
+		if (cl.hasOption("u")) {
+			serverURI = "coap://" + cl.getOptionValue("u");
+		}
+
+		// set device type
+		boolean isSensor = false;
+		if (cl.hasOption("t")) {
+			switch (cl.getOptionValue("t")) {
+			case "light":
+				break;
+			case "sensor":
+				isSensor = true;
+				break;
+			default:
+				System.err.println("Invalid value for option \"--type\".");
+				return;
+			}
+		}
+
+		String endpoint = String.format("%s-Device-%d-1", isSensor ? "Sensor" : "Light", GROUP_NO);
+		createClient(endpoint, serverURI, isSensor);
 	}
 
 	private static void loadSpec(List<ObjectModel> models, String resourceName) {
@@ -46,7 +100,7 @@ public class Client {
 		}
 	}
 
-	public static void createClient(String endpoint, String serverURI) {
+	public static void createClient(String endpoint, String serverURI, boolean isSensor) {
 		// Load LWM2M specs (include default OMA objects for Firmware profile)
 		List<ObjectModel> models = new ArrayList<>();
 		loadSpec(models, "/oma-objects-spec.json");
@@ -62,11 +116,20 @@ public class Client {
 		initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Group 19", "RPi", "12345", "U"));
 
 		// register other Objects by their ID
-		initializer.setClassForObject(LIGHT_PROFILE_ID, LightDevice.class);
+		if (isSensor) {
+			// TODO implement new SensorDevice class
+			//initializer.setClassForObject(SENSOR_PROFILE_ID, SensorDevice.class);
+		} else {
+			initializer.setClassForObject(LIGHT_PROFILE_ID, LightDevice.class);
+		}
 
 		// creates the Object Instances
-		List<LwM2mObjectEnabler> enablers = initializer.create(LwM2mId.SECURITY, LwM2mId.SERVER, LwM2mId.DEVICE,
-				LIGHT_PROFILE_ID, LwM2mId.FIRMWARE);
+		List<LwM2mObjectEnabler> enablers = initializer.create(LwM2mId.SECURITY, LwM2mId.SERVER, LwM2mId.DEVICE);
+		if (isSensor) {
+			enablers.add(initializer.create(SENSOR_PROFILE_ID));
+		} else {
+			enablers.addAll(initializer.create(LIGHT_PROFILE_ID, LwM2mId.FIRMWARE));
+		}
 
 		// Create client
 		LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
