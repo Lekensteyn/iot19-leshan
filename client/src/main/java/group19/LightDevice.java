@@ -7,10 +7,10 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 public class LightDevice extends BaseInstanceEnabler {
-	private String lightId;
-	private String deviceType;
+	private String lightId = "";
+	private String deviceType="";
 	private LightState lightState = LightState.FREE;
-	private String userType;
+	private UserType userType = UserType.USER3; 
 	private String userId;
 	private String lightColor;
 	private boolean lowLight;
@@ -18,7 +18,7 @@ public class LightDevice extends BaseInstanceEnabler {
 	private float locationX;
 	private float locationY;
 	private String roomId;
-	private String behaviorDeployment;
+	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.DISTRIBUTED;
 
 	@Override
 	public ReadResponse read(int resourceid) {
@@ -30,7 +30,7 @@ public class LightDevice extends BaseInstanceEnabler {
 		case 2:
 			return ReadResponse.success(resourceid, lightState.name());
 		case 3:
-			return ReadResponse.success(resourceid, userType);
+			return ReadResponse.success(resourceid, userType.name());
 		case 4:
 			return ReadResponse.success(resourceid, userId);
 		case 5:
@@ -46,7 +46,7 @@ public class LightDevice extends BaseInstanceEnabler {
 		case 10:
 			return ReadResponse.success(resourceid, roomId);
 		case 11:
-			return ReadResponse.success(resourceid, behaviorDeployment);
+			return ReadResponse.success(resourceid, behaviorDeployment.name());
 
 		default:
 			return super.read(resourceid);
@@ -70,25 +70,33 @@ public class LightDevice extends BaseInstanceEnabler {
 			}
 			return WriteResponse.success();
 		case 3:
-			userType = (String) value.getValue();
+			try {
+				userType = UserType.valueOf((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		case 4:
 			userId = (String) value.getValue();
 			return WriteResponse.success();
-		case 5:
+		case 7:
 			groupNo = (int) value.getValue();
 			return WriteResponse.success();
-		case 6:
+		case 8:
 			locationX = (float) value.getValue();
 			return WriteResponse.success();
-		case 7:
+		case 9:
 			locationY = (float) value.getValue();
 			return WriteResponse.success();
-		case 8:
+		case 10:
 			roomId = (String) value.getValue();
 			return WriteResponse.success();
-		case 9:
-			behaviorDeployment = (String) value.getValue();
+		case 11:
+			try {
+				behaviorDeployment = BehaviorDeployment.valueOf((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);
@@ -102,8 +110,16 @@ public class LightDevice extends BaseInstanceEnabler {
 			return super.execute(resourceid, params);
 		}
 	}
-	
+	//represents the state of the light device
 	enum LightState {
 		USED, FREE
 	}
+	//stating which lighting behavior deployment is used
+	enum BehaviorDeployment {
+		BROKER, DISTRIBUTED
+	}
+	enum UserType {
+		USER1, USER2, USER3
+	}
+	
 }
