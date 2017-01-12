@@ -1,8 +1,12 @@
 package group19;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+
+import org.slf4j.Logger;
 
 public class RPiDevice {
 
@@ -37,4 +41,21 @@ public class RPiDevice {
 		os.close();
 	}
 
+	protected void forwardErrors(InputStream err, final Logger logger) {
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(err));
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				String line;
+				try {
+					while ((line = reader.readLine()) != null) {
+						logger.warn("CHILD: " + line);
+					}
+				} catch (IOException e) {
+					logger.warn("Failed to read from child stderr", e);
+				}
+			}
+		}).start();
+	}
 }

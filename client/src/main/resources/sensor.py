@@ -17,6 +17,7 @@ try:
 except ImportError as e:
     sys.stderr.write("Failed to import packages, will use fake sensor.\n");
     sys.stderr.write("Error was: %s\n" % e)
+    sys.stderr.flush()
     use_pi = False
 
 def fakeProgram():

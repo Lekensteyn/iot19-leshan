@@ -47,6 +47,7 @@ public class RPiLightDevice extends RPiDevice implements LightProvider {
 			}
 			pyFile.setExecutable(true);
 			proc = Runtime.getRuntime().exec(pyFile.getAbsolutePath());
+			forwardErrors(proc.getErrorStream(), LOG);
 			childOutputStream = proc.getOutputStream();
 		} catch (IOException e) {
 			if (proc != null) {
@@ -81,7 +82,9 @@ public class RPiLightDevice extends RPiDevice implements LightProvider {
 		if (childOutputStream != null) {
 			byte[] data = (line + "\n").getBytes();
 			try {
+				LOG.debug("Writing line: " + line);
 				childOutputStream.write(data);
+				childOutputStream.flush();
 			} catch (IOException e) {
 				LOG.warn("Unable to write light command to child process", e);
 			}

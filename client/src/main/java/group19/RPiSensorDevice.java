@@ -39,6 +39,7 @@ public class RPiSensorDevice extends RPiDevice implements Runnable {
 			proc = Runtime.getRuntime().exec("python -");
 			childInputStream = proc.getInputStream();
 			readAndWriteScript(proc.getOutputStream(), "/sensor.py");
+			forwardErrors(proc.getErrorStream(), LOG);
 
 			boolean state = readStateFromChild();
 			sensorChangeListener.sensorChanged(state);
