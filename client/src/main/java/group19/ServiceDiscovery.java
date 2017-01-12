@@ -28,7 +28,7 @@ public class ServiceDiscovery {
 					// Skip unknown lines
 					continue;
 				}
-				if (parts[0] != "=") {
+				if (!parts[0].equals("=")) {
 					// Only process the "resolved addresses" part
 					continue;
 				}
