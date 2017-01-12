@@ -125,12 +125,16 @@ public class LightDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
-			realDevice.setColor(lightColor.r, lightColor.g, lightColor.b);
+			if (realDevice != null) {
+				realDevice.setColor(lightColor.r, lightColor.g, lightColor.b);
+			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 6: /* Low Light mode */
 			lowLight = (boolean) value.getValue();
-			realDevice.setLowLightMode(lowLight);
+			if (realDevice != null) {
+				realDevice.setLowLightMode(lowLight);
+			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
