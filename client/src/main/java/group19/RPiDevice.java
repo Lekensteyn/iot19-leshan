@@ -25,6 +25,9 @@ public class RPiDevice {
 	 */
 	protected void readAndWriteScript(OutputStream os, String filename) throws IOException {
 		InputStream input = loadResource(filename);
+		if (input == null) {
+			throw new IOException("Cannot load resource " + filename);
+		}
 		byte[] buffer = new byte[4096];
 		int n;
 		while ((n = input.read(buffer)) > 0) {
