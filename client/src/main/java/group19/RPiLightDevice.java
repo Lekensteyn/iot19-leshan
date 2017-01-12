@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ public class RPiLightDevice extends RPiDevice implements LightProvider {
 
 	private Process proc;
 	private OutputStream childOutputStream;
+	private Path tempDirectory;
 	private File pyFile;
 
 	/**
@@ -37,7 +40,8 @@ public class RPiLightDevice extends RPiDevice implements LightProvider {
 	 */
 	public void start() throws IOException {
 		try {
-			pyFile = File.createTempFile("light-", ".py");
+			tempDirectory = Files.createTempDirectory("iotLight");
+			pyFile = new File(tempDirectory.toFile(), "light.py");
 			try (OutputStream pyFileOut = new FileOutputStream(pyFile)) {
 				readAndWriteScript(pyFileOut, "/light.py");
 			}
@@ -48,12 +52,19 @@ public class RPiLightDevice extends RPiDevice implements LightProvider {
 			if (proc != null) {
 				proc.destroy();
 			}
+			deleteStuff();
 			throw e;
 		}
 	}
 
+	private void deleteStuff() {
+		pyFile.delete();
+		tempDirectory.toFile().delete();
+	}
+
 	public void destroy() {
 		proc.destroy();
+		deleteStuff();
 	}
 
 	@Override
