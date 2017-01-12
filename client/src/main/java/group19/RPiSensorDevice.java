@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * character for the current sensor state ({@code F} for Free or {@code U} for
  * Used) to standard output.
  */
-public class RPiSensorDevice implements Runnable {
+public class RPiSensorDevice extends RPiDevice implements Runnable {
 
 	private final static Logger LOG = LoggerFactory.getLogger(RPiSensorDevice.class);
 
@@ -36,8 +36,9 @@ public class RPiSensorDevice implements Runnable {
 	 */
 	public void start() throws IOException {
 		try {
-			proc = Runtime.getRuntime().exec("./sensor.py");
+			proc = Runtime.getRuntime().exec("python -");
 			childInputStream = proc.getInputStream();
+			readAndWriteScript(proc.getOutputStream(), "/sensor.py");
 
 			boolean state = readStateFromChild();
 			sensorChangeListener.sensorChanged(state);

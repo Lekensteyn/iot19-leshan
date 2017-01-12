@@ -1,5 +1,7 @@
 package group19;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -19,12 +21,13 @@ import org.slf4j.LoggerFactory;
  * <li>Disable low light mode: {@code lowlight false}
  * </ul>
  */
-public class RPiLightDevice implements LightProvider {
+public class RPiLightDevice extends RPiDevice implements LightProvider {
 
 	private final static Logger LOG = LoggerFactory.getLogger(RPiLightDevice.class);
 
 	private Process proc;
 	private OutputStream childOutputStream;
+	private File pyFile;
 
 	/**
 	 * Tries to start the child process.
@@ -34,7 +37,12 @@ public class RPiLightDevice implements LightProvider {
 	 */
 	public void start() throws IOException {
 		try {
-			proc = Runtime.getRuntime().exec("./light.py");
+			pyFile = File.createTempFile("light-", ".py");
+			try (OutputStream pyFileOut = new FileOutputStream(pyFile)) {
+				readAndWriteScript(pyFileOut, "/light.py");
+			}
+			pyFile.setExecutable(true);
+			proc = Runtime.getRuntime().exec(pyFile.getAbsolutePath());
 			childOutputStream = proc.getOutputStream();
 		} catch (IOException e) {
 			if (proc != null) {
