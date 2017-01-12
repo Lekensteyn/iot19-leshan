@@ -137,6 +137,28 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 12,
+        "name": "Ownership Priority",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "0-255 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 13,
+        "name": "Light Behavior",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "0-255 bytes",
+        "units": "",
+        "description": ""
       }
     ]
   }

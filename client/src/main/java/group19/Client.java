@@ -42,7 +42,8 @@ public class Client {
 		options.addOption("h", "help", false, "Display help information.");
 		options.addOption("u", "server", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
 		options.addOption("t", "type", true, "Set the device type (light or sensor).\nDefault: light.");
-		options.addOption("d", "discover", false, "Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
+		options.addOption("d", "discover", false,
+				"Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setOptionComparator(null);
 
@@ -138,10 +139,6 @@ public class Client {
 		} else {
 			LightDevice dev = new LightDevice(endpoint);
 			initializer.setInstancesForObject(LIGHT_PROFILE_ID, dev);
-			// TODO somehow multiple instances are not working, only ownership
-			// is available
-			initializer.setInstancesForObject(LwM2mId.FIRMWARE, dev.getLightFirmareUpdate());
-			initializer.setInstancesForObject(LwM2mId.FIRMWARE, dev.getOwnershipFirmwareUpdate());
 		}
 
 		// creates the Object Instances
@@ -149,7 +146,7 @@ public class Client {
 		if (isSensor) {
 			enablers.add(initializer.create(SENSOR_PROFILE_ID));
 		} else {
-			enablers.addAll(initializer.create(LIGHT_PROFILE_ID, LwM2mId.FIRMWARE));
+			enablers.add(initializer.create(LIGHT_PROFILE_ID));
 		}
 
 		// Create client

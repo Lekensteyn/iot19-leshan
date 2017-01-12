@@ -11,8 +11,6 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import group19.FirmwareUpdate.UpdateType;
-
 public class LightDevice extends BaseInstanceEnabler {
 
 	private final static Logger LOG = LoggerFactory.getLogger(LightDevice.class);
@@ -30,14 +28,10 @@ public class LightDevice extends BaseInstanceEnabler {
 	private String roomId = "";
 	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
 
-	private FirmwareUpdate lightBehaviorFirmwareUpdate;
-	private FirmwareUpdate ownershipFirmwareUpdate;
 	private LightProvider realDevice;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
-		this.lightBehaviorFirmwareUpdate = new FirmwareUpdate(UpdateType.LIGHT_BEHAVIOR, this);
-		this.ownershipFirmwareUpdate = new FirmwareUpdate(UpdateType.OWNERSHIP_PRIORITY, this);
 
 		final RPiLightDevice realDevice = new RPiLightDevice();
 		try {
@@ -161,6 +155,12 @@ public class LightDevice extends BaseInstanceEnabler {
 			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
+		case 12:
+			setOwnershipPriorityURL((String) value.getValue());
+			return WriteResponse.success();
+		case 13:
+			setLightBehaviorURL((String) value.getValue());
+			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);
 		}
@@ -172,6 +172,14 @@ public class LightDevice extends BaseInstanceEnabler {
 		default:
 			return super.execute(resourceid, params);
 		}
+	}
+
+	private void setOwnershipPriorityURL(String url) {
+		LOG.info("Setting Ownership Priority URL to: " + url);
+	}
+
+	private void setLightBehaviorURL(String url) {
+		LOG.info("Setting Light Behavior URL to: " + url);
 	}
 
 	// represents the state of the light device
@@ -186,14 +194,6 @@ public class LightDevice extends BaseInstanceEnabler {
 
 	enum UserType {
 		USER1, USER2, USER3
-	}
-
-	public LwM2mInstanceEnabler getLightFirmareUpdate() {
-		return lightBehaviorFirmwareUpdate;
-	}
-
-	public LwM2mInstanceEnabler getOwnershipFirmwareUpdate() {
-		return ownershipFirmwareUpdate;
 	}
 
 }
