@@ -42,6 +42,7 @@ public class Client {
 		options.addOption("h", "help", false, "Display help information.");
 		options.addOption("u", "server", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
 		options.addOption("t", "type", true, "Set the device type (light or sensor).\nDefault: light.");
+		options.addOption("d", "discover", false, "Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setOptionComparator(null);
 
@@ -80,6 +81,20 @@ public class Client {
 				System.err.println("Invalid value for option \"--type\".");
 				return;
 			}
+		}
+
+		boolean discover = cl.hasOption("d");
+		if (discover) {
+			List<String> addresses = ServiceDiscovery.findAddresses();
+			if (addresses.size() == 0) {
+				System.err.println("Cannot discover a LWM2M server in the network");
+				return;
+			}
+			if (addresses.size() > 1) {
+				LOG.warn("Found multiple LWM2M servers, will use the first one.");
+			}
+			serverURI = "coap://" + addresses.get(0) + ":5683";
+			LOG.info("Using discovered LWM2M server: " + serverURI);
 		}
 
 		String endpoint = String.format("%s-Device-%d-1", isSensor ? "Sensor" : "Light", GROUP_NO);
