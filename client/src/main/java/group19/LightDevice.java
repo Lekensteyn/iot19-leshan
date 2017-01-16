@@ -95,41 +95,30 @@ public class LightDevice extends BaseInstanceEnabler {
 			return WriteResponse.success();
 		case 2:
 			try {
-				lightState = LightState.valueOf((String) value.getValue());
+				setLightState((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
-			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 3:
 			try {
-				userType = UserType.valueOf((String) value.getValue());
+				setUserType((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
-			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 4:
-			userId = (String) value.getValue();
-			fireResourcesChange(resourceid);
+			setUserId((String) value.getValue());
 			return WriteResponse.success();
 		case 5: /* Light Color */
 			try {
-				lightColor = new RGBColor((String) value.getValue());
+				setLightColor((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
-			if (realDevice != null) {
-				realDevice.setColor(lightColor.r, lightColor.g, lightColor.b);
-			}
-			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 6: /* Low Light mode */
-			lowLight = (boolean) value.getValue();
-			if (realDevice != null) {
-				realDevice.setLowLightMode(lowLight);
-			}
-			fireResourcesChange(resourceid);
+			setLowLightMode((boolean) value.getValue());
 			return WriteResponse.success();
 		case 7:
 			groupNo = (long) value.getValue();
@@ -172,6 +161,37 @@ public class LightDevice extends BaseInstanceEnabler {
 		default:
 			return super.execute(resourceid, params);
 		}
+	}
+
+	private void setLightState(String value) {
+		lightState = LightState.valueOf(value);
+		fireResourcesChange(2);
+	}
+
+	private void setUserType(String value) {
+		userType = UserType.valueOf(value);
+		fireResourcesChange(3);
+	}
+
+	private void setUserId(String value) {
+		userId = value;
+		fireResourcesChange(4);
+	}
+
+	private void setLightColor(String value) {
+		lightColor = new RGBColor(value);
+		if (realDevice != null) {
+			realDevice.setColor(lightColor.r, lightColor.g, lightColor.b);
+		}
+		fireResourcesChange(5);
+	}
+
+	private void setLowLightMode(boolean value) {
+		lowLight = value;
+		if (realDevice != null) {
+			realDevice.setLowLightMode(lowLight);
+		}
+		fireResourcesChange(6);
 	}
 
 	private void setOwnershipPriorityURL(String url) {
