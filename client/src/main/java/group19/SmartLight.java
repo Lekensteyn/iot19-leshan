@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,10 @@ public class SmartLight extends RPiDevice {
 	}
 
 	private void writeChild(String line) {
+		if (line.contains("\n")) {
+			// should not happen, but if untrusted input is passed...
+			throw new IllegalArgumentException("Malformed input");
+		}
 		if (childStdin != null) {
 			byte[] data = (line + "\n").getBytes();
 			try {
@@ -125,5 +130,24 @@ public class SmartLight extends RPiDevice {
 				}
 			}
 		}).start();
+	}
+
+	public void setLocation(double x, double y) {
+		writeChild(String.format(Locale.ENGLISH, "location %f %f", x, y));
+	}
+
+	public void setOwnership(String ownershipJson) {
+		writeChild("ownership " + ownershipJson);
+	}
+
+	public void notifySensorOccupied(String sensor_id, boolean is_occupied) {
+		if (sensor_id.contains(" ")) {
+			throw new IllegalArgumentException("Bad Sensor ID");
+		}
+		writeChild(String.format("sensor_occupied %s %s", sensor_id, is_occupied));
+	}
+
+	public void setUser3(String user_id) {
+		writeChild("user3 " + user_id);
 	}
 }

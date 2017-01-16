@@ -97,24 +97,37 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 			deviceType = (String) value.getValue();
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
-		case 2:
+		case 2: /* Light State */
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				return WriteResponse.badRequest("Resource cannot be written in distributed mode");
+			}
 			try {
 				setLightState((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
 			return WriteResponse.success();
-		case 3:
+		case 3: /* User Type */
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				return WriteResponse.badRequest("Resource cannot be written in distributed mode");
+			}
 			try {
 				setUserType((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
 			return WriteResponse.success();
-		case 4:
-			setUserId((String) value.getValue());
+		case 4: /* User Id */
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				smartLight.setUser3((String) value.getValue());
+			} else {
+				setUserId((String) value.getValue());
+			}
 			return WriteResponse.success();
 		case 5: /* Light Color */
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				return WriteResponse.badRequest("Resource cannot be written in distributed mode");
+			}
 			try {
 				setLightColor((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
@@ -122,6 +135,9 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 			}
 			return WriteResponse.success();
 		case 6: /* Low Light mode */
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				return WriteResponse.badRequest("Resource cannot be written in distributed mode");
+			}
 			setLowLightMode((boolean) value.getValue());
 			return WriteResponse.success();
 		case 7:
@@ -130,10 +146,16 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 			return WriteResponse.success();
 		case 8:
 			locationX = (double) value.getValue();
+			if (smartLight != null) {
+				smartLight.setLocation(locationX, locationY);
+			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 9:
 			locationY = (double) value.getValue();
+			if (smartLight != null) {
+				smartLight.setLocation(locationX, locationY);
+			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 10:
@@ -181,6 +203,8 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 		try {
 			smartLight = new SmartLight();
 			smartLight.setListener(this);
+			smartLight.start();
+			smartLight.setLocation(locationX, locationY);
 		} catch (IOException e) {
 			LOG.warn("Failed to start smart behavior", e);
 		}
@@ -226,6 +250,10 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 	}
 
 	public void childValueEmitted(String key, String value) {
+		if (behaviorDeployment != BehaviorDeployment.Distributed) {
+			LOG.info("Ignoring child because not distributed mode.");
+			return;
+		}
 		switch (key) {
 		case "color":
 			setLightColor(value);
