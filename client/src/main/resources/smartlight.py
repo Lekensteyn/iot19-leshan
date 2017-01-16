@@ -37,6 +37,7 @@ Expected transformations:
 """
 
 import json
+from threading import Timer
 import sys
 
 light_x, light_y = None, None
@@ -49,6 +50,10 @@ users_db = {}
 sensors_occupied = {}
 # Current active user (info)
 current_setting = None
+
+# Timer object for delayed application of settings.
+delayed_timer = None
+
 
 def parse_ownership_json(data):
     """
@@ -135,15 +140,23 @@ def set_user3(user_id):
     if user_id not in users_db:
         print("Unknown user: %s" % user_id, file=sys.stderr)
         return  # Unknown user, go away please!
+
     if users_db[user_id]["user_type"] != "USER3":
         print("Not a user3: %s" % user_id, file=sys.stderr)
         return
-    if not current_setting or (current_setting["user_type"] == "USER3" and
-            priority(current_setting) >= priority(users_db[user_id])):
-        # Yes, user3 is allowed to be set and take ownership. Assume that the
-        # user is present (in case the light was added to network after sensor).
-        sensors_occupied[user_id] = True
-        apply_light_setting(users_db[user_id])
+
+    if current_setting:
+        if current_setting["user_type"] != "USER3":
+            print("Other user type is still active", file=sys.stderr)
+            return
+        if priority(current_setting) < priority(users_db[user_id]):
+            print("Other user3 has higher piority than you", file=sys.stderr)
+            return
+
+    # Yes, user3 is allowed to be set and take ownership. Assume that the
+    # user is present (in case the light was added to network after sensor).
+    sensors_occupied[user_id] = True
+    apply_light_setting(users_db[user_id])
 
 
 def apply_light_setting(info, delay=False):
@@ -151,10 +164,23 @@ def apply_light_setting(info, delay=False):
     Writes the appropriate commands to make the settings from "info" effective.
     If "info" is None, take into account whether people are in the room.
     """
-    global current_setting
+    global current_setting, delayed_timer
 
     print("Trying to apply info=%r delay=%r" % (info, delay), file=sys.stderr)
-    # XXX handle delay=True
+
+    if delayed_timer:
+        delayed_timer.cancel()
+        delayed_timer = None
+
+    if info == current_setting:
+        print("Nothing to do, situation is unchanged", file=sys.stderr)
+        return
+
+    if delay:
+        delayed_timer = Timer(3, apply_light_setting, args=[info])
+        delayed_timer.start()
+        return
+
     if info:
         lines = [
             ("color", info["light_color"]),
@@ -187,6 +213,8 @@ def apply_light_setting(info, delay=False):
 
 
 def main():
+    global light_x, light_y
+
     for line in sys.stdin:
         line = line.strip()
         if " " in line:
