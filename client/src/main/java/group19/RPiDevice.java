@@ -8,13 +8,16 @@ import java.io.OutputStream;
 
 import org.slf4j.Logger;
 
+/**
+ * Base class for communication with the RPi device.
+ */
 public class RPiDevice {
 
 	private static InputStream loadResource(String resourceName) {
-		InputStream input = RPiSensorDevice.class.getResourceAsStream(resourceName);
+		InputStream input = RPiDevice.class.getResourceAsStream(resourceName);
 		if (input == null) {
 			resourceName = "/resources" + resourceName;
-			input = RPiSensorDevice.class.getResourceAsStream(resourceName);
+			input = RPiDevice.class.getResourceAsStream(resourceName);
 		}
 		return input;
 	}

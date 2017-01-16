@@ -3,7 +3,6 @@ package group19;
 import java.io.IOException;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
