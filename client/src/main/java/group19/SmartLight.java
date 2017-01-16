@@ -65,6 +65,7 @@ public class SmartLight extends RPiDevice {
 			forwardErrors(proc.getErrorStream(), LOG);
 			childStdout = proc.getInputStream();
 			childStdin = proc.getOutputStream();
+			watchStdout();
 		} catch (IOException e) {
 			if (proc != null) {
 				proc.destroy();

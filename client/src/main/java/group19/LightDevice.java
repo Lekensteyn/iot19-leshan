@@ -1,6 +1,7 @@
 package group19;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -29,6 +30,7 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 
 	private LightProvider realDevice;
 	private SmartLight smartLight;
+	private String ownershipPriorityJson;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
@@ -205,6 +207,9 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 			smartLight.setListener(this);
 			smartLight.start();
 			smartLight.setLocation(locationX, locationY);
+			if (ownershipPriorityJson != null) {
+				smartLight.setOwnership(ownershipPriorityJson);
+			}
 		} catch (IOException e) {
 			LOG.warn("Failed to start smart behavior", e);
 		}
@@ -243,6 +248,29 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 
 	private void setOwnershipPriorityURL(String url) {
 		LOG.info("Setting Ownership Priority URL to: " + url);
+		new Thread(new Download(url) {
+
+			@Override
+			public void onError(IOException e) {
+				LOG.warn("Failed to retrieve ownership priority file", e);
+			}
+
+			@Override
+			public void onComplete(byte[] data) {
+				String text;
+				try {
+					text = new String(data, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					LOG.warn("Failed to decode data", e);
+					return;
+				}
+				// TODO validate JSON
+				ownershipPriorityJson = text;
+				if (smartLight != null) {
+					smartLight.setOwnership(ownershipPriorityJson);
+				}
+			}
+		}).start();
 	}
 
 	private void setLightBehaviorURL(String url) {
