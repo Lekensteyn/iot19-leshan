@@ -9,7 +9,7 @@
       {
         "id": 0,
         "name": "Light ID",
-        "operations": "RW",
+        "operations": "R",
         "instancetype": "single",
         "mandatory": true,
         "type": "string",
@@ -20,7 +20,7 @@
       {
         "id": 1,
         "name": "Device Type",
-        "operations": "RW",
+        "operations": "R",
         "instancetype": "single",
         "mandatory": true,
         "type": "string",

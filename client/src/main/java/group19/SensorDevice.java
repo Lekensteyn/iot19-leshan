@@ -74,14 +74,6 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 	@Override
 	public WriteResponse write(int resourceid, LwM2mResource value) {
 		switch (resourceid) {
-		case 0:
-			sensorId = (String) value.getValue();
-			fireResourcesChange(resourceid);
-			return WriteResponse.success();
-		case 1:
-			deviceType = (String) value.getValue();
-			fireResourcesChange(resourceid);
-			return WriteResponse.success();
 		case 2:
 			try {
 				sensorState = SensorState.valueOf((String) value.getValue());

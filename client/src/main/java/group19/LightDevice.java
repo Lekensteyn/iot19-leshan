@@ -91,14 +91,6 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 	@Override
 	public WriteResponse write(int resourceid, LwM2mResource value) {
 		switch (resourceid) {
-		case 0:
-			lightId = (String) value.getValue();
-			fireResourcesChange(resourceid);
-			return WriteResponse.success();
-		case 1:
-			deviceType = (String) value.getValue();
-			fireResourcesChange(resourceid);
-			return WriteResponse.success();
 		case 2: /* Light State */
 			if (behaviorDeployment == BehaviorDeployment.Distributed) {
 				return WriteResponse.badRequest("Resource cannot be written in distributed mode");
