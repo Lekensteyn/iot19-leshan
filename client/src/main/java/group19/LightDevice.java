@@ -10,7 +10,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LightDevice extends BaseInstanceEnabler {
+public class LightDevice extends BaseInstanceEnabler implements SmartLightEventListener {
 
 	private final static Logger LOG = LoggerFactory.getLogger(LightDevice.class);
 
@@ -28,6 +28,7 @@ public class LightDevice extends BaseInstanceEnabler {
 	private BehaviorDeployment behaviorDeployment = BehaviorDeployment.Distributed;
 
 	private LightProvider realDevice;
+	private SmartLight smartLight;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
@@ -45,6 +46,10 @@ public class LightDevice extends BaseInstanceEnabler {
 			});
 		} catch (IOException e) {
 			LOG.error("Failed to start light device controller, state will not be updated!", e);
+		}
+
+		if (behaviorDeployment == BehaviorDeployment.Distributed) {
+			startDistributedBehavior();
 		}
 	}
 
@@ -141,6 +146,10 @@ public class LightDevice extends BaseInstanceEnabler {
 			} catch (IllegalArgumentException ex) {
 				return WriteResponse.badRequest("Invalid argument");
 			}
+			// Try to start distributed behavior as needed
+			if (behaviorDeployment == BehaviorDeployment.Distributed) {
+				startDistributedBehavior();
+			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 12:
@@ -159,6 +168,21 @@ public class LightDevice extends BaseInstanceEnabler {
 		switch (resourceid) {
 		default:
 			return super.execute(resourceid, params);
+		}
+	}
+
+	private void startDistributedBehavior() {
+		if (smartLight != null) {
+			// smartLight.destroy();
+			// smartLight = null;
+			// Already running, do not restart.
+			return;
+		}
+		try {
+			smartLight = new SmartLight();
+			smartLight.setListener(this);
+		} catch (IOException e) {
+			LOG.warn("Failed to start smart behavior", e);
 		}
 	}
 
@@ -199,6 +223,28 @@ public class LightDevice extends BaseInstanceEnabler {
 
 	private void setLightBehaviorURL(String url) {
 		LOG.info("Setting Light Behavior URL to: " + url);
+	}
+
+	public void childValueEmitted(String key, String value) {
+		switch (key) {
+		case "color":
+			setLightColor(value);
+			break;
+		case "lowlight":
+			setLowLightMode(Boolean.valueOf(value));
+			break;
+		case "userid":
+			setUserId(value);
+			break;
+		case "state":
+			setLightState(value);
+			break;
+		case "usertype":
+			setUserType(value);
+			break;
+		default:
+			LOG.warn("Unhandled option from child: " + key);
+		}
 	}
 
 	// represents the state of the light device
