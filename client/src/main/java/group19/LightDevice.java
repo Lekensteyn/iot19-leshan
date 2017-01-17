@@ -8,10 +8,17 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LightDevice extends BaseInstanceEnabler implements SmartLightEventListener {
+import group19.SensorDevice.SensorState;
+
+public class LightDevice extends BaseInstanceEnabler
+		implements SmartLightEventListener, MqttClientUser, IMqttMessageListener {
 
 	private final static Logger LOG = LoggerFactory.getLogger(LightDevice.class);
 
@@ -31,6 +38,8 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 	private LightProvider realDevice;
 	private SmartLight smartLight;
 	private String ownershipPriorityJson;
+	private MqttAsyncClient mqttClient;
+	private String mqttTopicFilter;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
@@ -295,6 +304,52 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 		}
 	}
 
+	@Override
+	public void setMqttClient(MqttAsyncClient client) {
+		this.mqttClient = client;
+		subscribeToSensors();
+	}
+
+	private void subscribeToSensors() {
+		if (mqttClient == null) {
+			return;
+		}
+		if (roomId.isEmpty()) {
+			LOG.warn("Not subscribing to sensor state, room is unknown");
+			return;
+		}
+		String topic = String.format("TUE/%s/Sensor/%s/State", roomId, "+");
+		if (mqttTopicFilter != null && mqttTopicFilter.equals(topic)) {
+			LOG.info("Topic did not change, skipping re-subscription");
+			return;
+		}
+		try {
+			// unsubscribe from old filter
+			if (mqttTopicFilter != null) {
+				mqttClient.unsubscribe(mqttTopicFilter);
+			}
+			mqttTopicFilter = topic;
+			mqttClient.subscribe(topic, 0, this);
+		} catch (MqttException e) {
+			LOG.warn("Failed to subscribe to MQTT topic", e);
+		}
+	}
+
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
+		String[] parts = topic.split("/");
+		String roomId = parts[1];
+		String sensorId = parts[4];
+		String payload = message.getPayload().toString();
+		// We subscribed only to the long topic, so assume sufficient parts.
+		LOG.info("MQTT message received: roomId={} sensorId={} payload={}", roomId, sensorId, payload);
+
+		boolean isOccupied = SensorState.valueOf(payload) == SensorState.USED;
+		if (smartLight != null) {
+			smartLight.notifySensorOccupied(sensorId, isOccupied);
+		}
+	}
+
 	// represents the state of the light device
 	enum LightState {
 		USED, FREE
@@ -308,5 +363,4 @@ public class LightDevice extends BaseInstanceEnabler implements SmartLightEventL
 	enum UserType {
 		USER1, USER2, USER3
 	}
-
 }

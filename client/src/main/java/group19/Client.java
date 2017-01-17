@@ -3,6 +3,8 @@ package group19;
 import static org.eclipse.leshan.client.object.Security.noSec;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,10 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -41,6 +47,7 @@ public class Client {
 		Options options = new Options();
 		options.addOption("h", "help", false, "Display help information.");
 		options.addOption("u", "server", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
+		options.addOption("m", "mqtt", true, "Set the MQTT broker address.\nDefault the LWM2M broker host.");
 		options.addOption("t", "type", true, "Set the device type (light or sensor).\nDefault: light.");
 		options.addOption("d", "discover", false,
 				"Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
@@ -99,7 +106,27 @@ public class Client {
 		}
 
 		String endpoint = String.format("%s-Device-%d-1", isSensor ? "Sensor" : "Light", GROUP_NO);
-		createClient(endpoint, serverURI, isSensor);
+		URI coapServerURI, mqttServerURI;
+		try {
+			coapServerURI = new URI(serverURI);
+		} catch (URISyntaxException e) {
+			LOG.error("Unable to parse LWM2M server " + serverURI, e);
+			return;
+		}
+
+		// Default MQTT broker address to the LWM2M server.
+		String mqttAddr = coapServerURI.getHost();
+		if (cl.hasOption("m")) {
+			mqttAddr = cl.getOptionValue("m");
+		}
+		try {
+			mqttServerURI = new URI("tcp://" + mqttAddr);
+		} catch (URISyntaxException e) {
+			LOG.error("Unable to parse MQTT broker address " + mqttAddr, e);
+			return;
+		}
+
+		createClient(endpoint, coapServerURI, mqttServerURI, isSensor);
 	}
 
 	private static void loadSpec(List<ObjectModel> models, String resourceName) {
@@ -116,7 +143,7 @@ public class Client {
 		}
 	}
 
-	public static void createClient(String endpoint, String serverURI, boolean isSensor) {
+	public static void createClient(String endpoint, URI coapServerURI, URI mqttServerURI, boolean isSensor) {
 		// Load LWM2M specs (include default OMA objects for Firmware profile)
 		List<ObjectModel> models = new ArrayList<>();
 		loadSpec(models, "/oma-objects-spec.json");
@@ -126,19 +153,22 @@ public class Client {
 		ObjectsInitializer initializer = new ObjectsInitializer(model);
 
 		// Register mandatory objects (See Appendix E.1, E.2, E.4 of OMA TS)
-		initializer.setInstancesForObject(LwM2mId.SECURITY, noSec(serverURI, 123));
+		initializer.setInstancesForObject(LwM2mId.SECURITY, noSec(coapServerURI.toString(), 123));
 		initializer.setInstancesForObject(LwM2mId.SERVER, new Server(123, 30, BindingMode.U, false));
 		// Note: Device is mandatory (including things like reboot), but this is
 		// not fully implemented by Leshan.
 		initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Group 19", "RPi", "12345", "U"));
 
 		// register other Objects by their ID
+		final MqttClientUser mqttClientUser;
 		if (isSensor) {
-			SensorDevice dev = new SensorDevice(endpoint);
-			initializer.setInstancesForObject(SENSOR_PROFILE_ID, dev);
+			SensorDevice sensorDevice = new SensorDevice(endpoint);
+			initializer.setInstancesForObject(SENSOR_PROFILE_ID, sensorDevice);
+			mqttClientUser = sensorDevice;
 		} else {
-			LightDevice dev = new LightDevice(endpoint);
-			initializer.setInstancesForObject(LIGHT_PROFILE_ID, dev);
+			LightDevice lightDevice = new LightDevice(endpoint);
+			initializer.setInstancesForObject(LIGHT_PROFILE_ID, lightDevice);
+			mqttClientUser = lightDevice;
 		}
 
 		// creates the Object Instances
@@ -165,5 +195,25 @@ public class Client {
 				client.destroy(true);
 			}
 		});
+
+		// Register MQTT client to update SmartLight or publish sensor data.
+		try {
+			final MqttAsyncClient mqttClient = new MqttAsyncClient(mqttServerURI.toString(), endpoint);
+			mqttClient.connect().setActionCallback(new IMqttActionListener() {
+
+				@Override
+				public void onSuccess(IMqttToken token) {
+					LOG.info("Connected to MQTT broker");
+					mqttClientUser.setMqttClient(mqttClient);
+				}
+
+				@Override
+				public void onFailure(IMqttToken token, Throwable e) {
+					LOG.error("Cannot connect to MQTT broker", e);
+				}
+			});
+		} catch (MqttException e) {
+			LOG.warn("MQTT client failed", e);
+		}
 	}
 }
