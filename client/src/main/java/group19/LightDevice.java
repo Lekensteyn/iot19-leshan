@@ -162,8 +162,11 @@ public class LightDevice extends BaseInstanceEnabler
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 10:
-			roomId = (String) value.getValue();
-			fireResourcesChange(resourceid);
+			try {
+				setRoomId((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		case 11:
 			try {
@@ -245,6 +248,17 @@ public class LightDevice extends BaseInstanceEnabler
 			realDevice.setLowLightMode(lowLight);
 		}
 		fireResourcesChange(6);
+	}
+
+	public void setRoomId(String roomId) {
+		if (roomId.contains("/")) {
+			throw new IllegalArgumentException("Invalid argument");
+		}
+		if (!this.roomId.equals(roomId)) {
+			this.roomId = roomId;
+			fireResourcesChange(10);
+			subscribeToSensors();
+		}
 	}
 
 	private void setOwnershipPriorityURL(String url) {

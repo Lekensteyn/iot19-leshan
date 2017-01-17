@@ -103,7 +103,11 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 7:
-			setRoomId((String) value.getValue());
+			try {
+				setRoomId((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);
@@ -119,6 +123,9 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 	}
 
 	public void setRoomId(String roomId) {
+		if (roomId.contains("/")) {
+			throw new IllegalArgumentException("Invalid argument");
+		}
 		if (!this.roomId.equals(roomId)) {
 			this.roomId = roomId;
 			fireResourcesChange(7);
