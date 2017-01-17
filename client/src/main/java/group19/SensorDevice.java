@@ -128,7 +128,7 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 
 	@Override
 	public void sensorChanged(boolean inUse) {
-		SensorState sensorState = inUse ? SensorState.USED : SensorState.FREE;
+		SensorState sensorState = inUse ? SensorState.OCCUPIED : SensorState.FREE;
 		if (this.sensorState != sensorState) {
 			this.sensorState = sensorState;
 			fireResourcesChange(2);
@@ -160,7 +160,7 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 
 	// represents the state of the sensor device
 	enum SensorState {
-		USED, FREE
+		OCCUPIED, FREE
 	}
 
 }

@@ -344,7 +344,7 @@ public class LightDevice extends BaseInstanceEnabler
 		// We subscribed only to the long topic, so assume sufficient parts.
 		LOG.info("MQTT message received: roomId={} sensorId={} payload={}", roomId, sensorId, payload);
 
-		boolean isOccupied = SensorState.valueOf(payload) == SensorState.USED;
+		boolean isOccupied = SensorState.valueOf(payload) == SensorState.OCCUPIED;
 		if (smartLight != null) {
 			smartLight.notifySensorOccupied(sensorId, isOccupied);
 		}
