@@ -24,7 +24,7 @@ Output:
     set color           (r, g, b)
     set lowlight        true/false
     set userid          userid
-    set state           used/free
+    set state           USED/FREE
     set usertype        USER1/USER2/USER3
 
 Expected transformations:
@@ -194,12 +194,12 @@ def apply_light_setting(info, delay=False):
             ("color", info["light_color"]),
             ("lowlight", info["low_light"]),
             ("userid", info["user_id"]),
-            ("state", True),
+            ("state", "USED"),
             ("usertype", info["user_type"]),
         ]
     else:
         lines = [
-            ("state", False)
+            ("state", "FREE")
         ]
         if any_user_present_now:
             lines += [
