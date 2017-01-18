@@ -53,6 +53,8 @@ users_db = {}
 sensors_occupied = {}
 # Current active user (info)
 current_setting = None
+# Whether any user is present, used for deciding whether to dim/turn off lights.
+any_user_present = False
 
 # Timer object for delayed application of settings.
 delayed_timer = None
@@ -167,7 +169,7 @@ def apply_light_setting(info, delay=False):
     Writes the appropriate commands to make the settings from "info" effective.
     If "info" is None, take into account whether people are in the room.
     """
-    global current_setting, delayed_timer
+    global current_setting, any_user_present, delayed_timer
 
     _logger.info("Trying to apply info=%r delay=%r", info, delay)
 
@@ -175,7 +177,10 @@ def apply_light_setting(info, delay=False):
         delayed_timer.cancel()
         delayed_timer = None
 
-    if info == current_setting:
+    # Assume that all advertised sensors belong to this room.
+    any_user_present_now = any(is_occupied for is_occupied in sensors_occupied)
+
+    if info == current_setting and any_user_present == any_user_present_now:
         _logger.info("Nothing to do, situation is unchanged")
         return
 
@@ -196,7 +201,7 @@ def apply_light_setting(info, delay=False):
         lines = [
             ("state", False)
         ]
-        if any(sensors_occupied.get(sensor_id) for sensor_id in sensors_db.keys()):
+        if any_user_present_now:
             lines += [
                 ("color", "(250, 200, 100)"),
                 ("lowlight", True),
@@ -212,6 +217,7 @@ def apply_light_setting(info, delay=False):
             value = "true" if value else "false"
         print("set %s %s" % (key, value))
     current_setting = info
+    any_user_present = any_user_present_now
     sys.stdout.flush()
 
 
