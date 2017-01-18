@@ -199,7 +199,8 @@ public class Client {
 		// Register MQTT client to update SmartLight or publish sensor data.
 		try {
 			final MqttAsyncClient mqttClient = new MqttAsyncClient(mqttServerURI.toString(), endpoint);
-			mqttClient.connect().setActionCallback(new IMqttActionListener() {
+			LOG.info("Trying to connect to MQTT broker: " + mqttServerURI);
+			mqttClient.connect(null, new IMqttActionListener() {
 
 				@Override
 				public void onSuccess(IMqttToken token) {

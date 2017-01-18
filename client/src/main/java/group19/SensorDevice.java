@@ -156,10 +156,15 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 			LOG.warn("Not publishing sensor state, room is unknown");
 			return;
 		}
-		String topic = String.format("TUE/%s/Sensor/%s/State", roomId, "+");
+		if (sensorId.isEmpty()) {
+			LOG.warn("Not publishing sensor state, sensorId is unknown");
+			return;
+		}
+		String topic = String.format("TUE/%s/Sensor/%s/State", roomId, sensorId);
 		byte[] payload = sensorState.name().getBytes();
 		try {
 			mqttClient.publish(topic, payload, 0, false);
+			LOG.info("Published to MQTT topic {}: {}", topic, sensorState.name());
 		} catch (MqttException e) {
 			LOG.warn("Failed to publish sensor state", e);
 		}

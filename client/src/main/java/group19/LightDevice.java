@@ -161,7 +161,7 @@ public class LightDevice extends BaseInstanceEnabler
 			}
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
-		case 10:
+		case 10: /* Room Id */
 			try {
 				setRoomId((String) value.getValue());
 			} catch (IllegalArgumentException ex) {
@@ -344,6 +344,7 @@ public class LightDevice extends BaseInstanceEnabler
 			}
 			mqttTopicFilter = topic;
 			mqttClient.subscribe(topic, 0, this);
+			LOG.info("Subscribed to MQTT topic " + topic);
 		} catch (MqttException e) {
 			LOG.warn("Failed to subscribe to MQTT topic", e);
 		}
@@ -353,8 +354,8 @@ public class LightDevice extends BaseInstanceEnabler
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		String[] parts = topic.split("/");
 		String roomId = parts[1];
-		String sensorId = parts[4];
-		String payload = message.getPayload().toString();
+		String sensorId = parts[3];
+		String payload = new String(message.getPayload());
 		// We subscribed only to the long topic, so assume sufficient parts.
 		LOG.info("MQTT message received: roomId={} sensorId={} payload={}", roomId, sensorId, payload);
 
