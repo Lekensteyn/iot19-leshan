@@ -36,9 +36,12 @@ Expected transformations:
  - If no user is present in room, turn lights off.
 """
 
+import logging
 import json
 from threading import Timer
 import sys
+
+_logger = logging.getLogger(__name__)
 
 light_x, light_y = None, None
 
@@ -74,7 +77,7 @@ def parse_ownership_json(data):
     for info in json.loads(data):
         users_db[info["user_id"]] = info
         sensors_db[info["sensor_id"]] = info
-    print("Loaded new userdb: %r" % users_db, file=sys.stderr)
+    _logger.info("Loaded new userdb: %r", users_db)
 
     # Set user information with current information object.
     user = find_next_user(user3_id=old_user3)
@@ -138,19 +141,19 @@ def set_user3(user_id):
     another user3 with lower priority, ownership can also be taken.
     """
     if user_id not in users_db:
-        print("Unknown user: %s" % user_id, file=sys.stderr)
+        _logger.warn("Unknown user: %s", user_id)
         return  # Unknown user, go away please!
 
     if users_db[user_id]["user_type"] != "USER3":
-        print("Not a user3: %s" % user_id, file=sys.stderr)
+        _logger.warn("Not a user3: %s", user_id)
         return
 
     if current_setting:
         if current_setting["user_type"] != "USER3":
-            print("Other user type is still active", file=sys.stderr)
+            _logger.warn("Other user type is still active")
             return
         if priority(current_setting) < priority(users_db[user_id]):
-            print("Other user3 has higher piority than you", file=sys.stderr)
+            _logger.warn("Other user3 has higher piority than you")
             return
 
     # Yes, user3 is allowed to be set and take ownership. Assume that the
@@ -166,14 +169,14 @@ def apply_light_setting(info, delay=False):
     """
     global current_setting, delayed_timer
 
-    print("Trying to apply info=%r delay=%r" % (info, delay), file=sys.stderr)
+    _logger.info("Trying to apply info=%r delay=%r", info, delay)
 
     if delayed_timer:
         delayed_timer.cancel()
         delayed_timer = None
 
     if info == current_setting:
-        print("Nothing to do, situation is unchanged", file=sys.stderr)
+        _logger.info("Nothing to do, situation is unchanged")
         return
 
     if delay:
@@ -215,6 +218,8 @@ def apply_light_setting(info, delay=False):
 def main():
     global light_x, light_y
 
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
     for line in sys.stdin:
         line = line.strip()
         if " " in line:
@@ -233,7 +238,7 @@ def main():
             elif cmd == "user3":
                 set_user3(args)
         except Exception as e:
-            print("Error: %s" % e, file=sys.stderr)
+            _logger.exception("Error while processing %s", line)
 
 if __name__ == '__main__':
     main()
