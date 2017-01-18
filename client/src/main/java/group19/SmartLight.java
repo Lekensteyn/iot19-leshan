@@ -122,13 +122,13 @@ public class SmartLight extends RPiDevice {
 				try {
 					while ((line = reader.readLine()) != null) {
 						String[] args = line.split(" ", 3);
-						if (args.length != 3 || args[0] != "set") {
+						if (args.length != 3 || !args[0].equals("set")) {
 							LOG.warn("Unexpected input from child: " + line);
 							continue;
 						}
 						if (listener != null) {
 							try {
-								listener.childValueEmitted(args[1], args[2]);
+								listener.childValueEmitted(args[1], args[2].trim());
 							} catch (IllegalArgumentException e) {
 								LOG.warn("Invalid option received from child", e);
 							}
