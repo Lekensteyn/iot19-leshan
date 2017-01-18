@@ -222,15 +222,18 @@ def main():
         else:
             cmd, args = line, ""
 
-        if cmd == "location":
-            light_x, light_y = map(float, args.split())
-        elif cmd == "ownership":
-            parse_ownership_json(args)
-        elif cmd == "sensor_occupied":
-            sensor_id, occupied = args.split()
-            set_sensor_occupied(sensor_id, occupied == "true")
-        elif cmd == "user3":
-            set_user3(args)
+        try:
+            if cmd == "location":
+                light_x, light_y = map(float, args.split())
+            elif cmd == "ownership":
+                parse_ownership_json(args)
+            elif cmd == "sensor_occupied":
+                sensor_id, occupied = args.split()
+                set_sensor_occupied(sensor_id, occupied == "true")
+            elif cmd == "user3":
+                set_user3(args)
+        except Exception as e:
+            print("Error: %s" % e, file=sys.stderr)
 
 if __name__ == '__main__':
     main()
