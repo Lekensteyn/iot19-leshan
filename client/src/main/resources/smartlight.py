@@ -178,7 +178,8 @@ def apply_light_setting(info, delay=False):
         delayed_timer = None
 
     # Assume that all advertised sensors belong to this room.
-    any_user_present_now = any(is_occupied for is_occupied in sensors_occupied)
+    any_user_present_now = any(is_occupied
+            for is_occupied in sensors_occupied.values())
 
     if info == current_setting and any_user_present == any_user_present_now:
         _logger.info("Nothing to do, situation is unchanged")
