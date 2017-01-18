@@ -47,6 +47,14 @@ public class SmartLight extends RPiDevice {
 			deleteStuff();
 			throw e;
 		}
+
+		// Cleanup temporary files on exit
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				deleteStuff();
+			}
+		});
 	}
 
 	public void setListener(SmartLightEventListener listener) {
