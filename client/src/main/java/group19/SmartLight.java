@@ -138,7 +138,7 @@ public class SmartLight extends RPiDevice {
 	}
 
 	public void setOwnership(String ownershipJson) {
-		writeChild("ownership " + ownershipJson);
+		writeChild("ownership " + ownershipJson.replace("\r", "").replace("\n", ""));
 	}
 
 	public void notifySensorOccupied(String sensor_id, boolean is_occupied) {
