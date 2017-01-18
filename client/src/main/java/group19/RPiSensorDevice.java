@@ -36,7 +36,7 @@ public class RPiSensorDevice extends RPiDevice implements Runnable {
 	 */
 	public void start() throws IOException {
 		try {
-			proc = Runtime.getRuntime().exec("python -");
+			proc = Runtime.getRuntime().exec("python2 -");
 			childInputStream = proc.getInputStream();
 			readAndWriteScript(proc.getOutputStream(), "/sensor.py");
 			forwardErrors(proc.getErrorStream(), LOG);
