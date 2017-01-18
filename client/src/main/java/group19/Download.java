@@ -37,8 +37,9 @@ public abstract class Download implements Runnable {
 		InputStream is = httpConn.getInputStream();
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		byte[] buffer = new byte[4096];
-		while (is.read(buffer) != -1) {
-			os.write(buffer);
+		int n;
+		while ((n = is.read(buffer)) != -1) {
+			os.write(buffer, 0, n);
 		}
 		return os.toByteArray();
 	}
