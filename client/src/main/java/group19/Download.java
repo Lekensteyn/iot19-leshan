@@ -27,7 +27,7 @@ public abstract class Download implements Runnable {
 
 	private final void setUrl(URL url) {
 		this.url = url;
-		if (url.getProtocol() != "http" && url.getProtocol() != "https") {
+		if (!url.getProtocol().equals("http") && !url.getProtocol().equals("https")) {
 			throw new IllegalArgumentException("Expected HTTP URL.");
 		}
 	}
