@@ -35,26 +35,24 @@ public class SmartLight extends RPiDevice {
 	 * 
 	 * @throws IOException
 	 */
-	public SmartLight() throws IOException {
+	public SmartLight(byte[] program) throws IOException {
 		try {
 			tempDirectory = Files.createTempDirectory("iotLightBehavior");
 			pyFile = new File(tempDirectory.toFile(), "smartlight.py");
 			try (OutputStream pyFileOut = new FileOutputStream(pyFile)) {
-				readAndWriteScript(pyFileOut, "/smartlight.py");
+				if (program != null) {
+					LOG.info("Writing custom program.");
+					pyFileOut.write(program);
+				} else {
+					LOG.info("Writing default program.");
+					readAndWriteScript(pyFileOut, "/smartlight.py");
+				}
 			}
 			pyFile.setExecutable(true);
 		} catch (IOException e) {
 			deleteStuff();
 			throw e;
 		}
-
-		// Cleanup temporary files on exit
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				deleteStuff();
-			}
-		});
 	}
 
 	public void setListener(SmartLightEventListener listener) {

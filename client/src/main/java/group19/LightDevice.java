@@ -41,6 +41,7 @@ public class LightDevice extends BaseInstanceEnabler
 	private String ownershipPriorityJson;
 	private MqttAsyncClient mqttClient;
 	private String mqttTopicFilter;
+	private byte[] smartLightProgram;
 
 	public LightDevice(String lightId) {
 		this.lightId = lightId;
@@ -62,6 +63,21 @@ public class LightDevice extends BaseInstanceEnabler
 
 		if (behaviorDeployment == BehaviorDeployment.Distributed) {
 			startDistributedBehavior();
+		}
+
+		// Cleanup temporary files on exit
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				stopSmartLight();
+			}
+		});
+	}
+
+	private void stopSmartLight() {
+		if (smartLight != null) {
+			smartLight.destroy();
+			smartLight = null;
 		}
 	}
 
@@ -210,13 +226,11 @@ public class LightDevice extends BaseInstanceEnabler
 
 	private void startDistributedBehavior() {
 		if (smartLight != null) {
-			// smartLight.destroy();
-			// smartLight = null;
 			// Already running, do not restart.
 			return;
 		}
 		try {
-			smartLight = new SmartLight();
+			smartLight = new SmartLight(smartLightProgram);
 			smartLight.setListener(this);
 			smartLight.start();
 			smartLight.setLocation(locationX, locationY);
@@ -225,6 +239,18 @@ public class LightDevice extends BaseInstanceEnabler
 			}
 		} catch (IOException e) {
 			LOG.warn("Failed to start smart behavior", e);
+		}
+	}
+
+	private void installCustomLightBehavior(byte[] program) {
+		this.smartLightProgram = program;
+		// Kill any existing smart light processes.
+		if (smartLight != null) {
+			LOG.info("Replacing existing SmartLight program.");
+			// if a smart light service is already running, replace it.
+			smartLight.destroy();
+			smartLight = null;
+			startDistributedBehavior();
 		}
 	}
 
@@ -317,7 +343,7 @@ public class LightDevice extends BaseInstanceEnabler
 					return;
 				}
 				LOG.info("Received valid program of {} bytes", program.length);
-				// TODO use program
+				installCustomLightBehavior(program);
 			}
 		}).start();
 	}
