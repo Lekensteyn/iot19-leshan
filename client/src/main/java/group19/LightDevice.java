@@ -2,6 +2,7 @@ package group19;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.SignatureException;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -181,10 +182,18 @@ public class LightDevice extends BaseInstanceEnabler
 			fireResourcesChange(resourceid);
 			return WriteResponse.success();
 		case 12:
-			setOwnershipPriorityURL((String) value.getValue());
+			try {
+				setOwnershipPriorityURL((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		case 13:
-			setLightBehaviorURL((String) value.getValue());
+			try {
+				setLightBehaviorURL((String) value.getValue());
+			} catch (IllegalArgumentException ex) {
+				return WriteResponse.badRequest("Invalid argument");
+			}
 			return WriteResponse.success();
 		default:
 			return super.write(resourceid, value);
@@ -290,6 +299,27 @@ public class LightDevice extends BaseInstanceEnabler
 
 	private void setLightBehaviorURL(String url) {
 		LOG.info("Setting Light Behavior URL to: " + url);
+		new Thread(new Download(url) {
+
+			@Override
+			public void onError(IOException e) {
+				LOG.warn("Failed to retrieve Light Behavior file");
+			}
+
+			@Override
+			public void onComplete(byte[] data) {
+				byte[] program;
+				try {
+					SignedData signedData = SignedData.load(data);
+					program = signedData.getVerifiedData();
+				} catch (SignatureException e) {
+					LOG.error("Failed to verify light behavior program", e);
+					return;
+				}
+				LOG.info("Received valid program of {} bytes", program.length);
+				// TODO use program
+			}
+		}).start();
 	}
 
 	public void childValueEmitted(String key, String value) {

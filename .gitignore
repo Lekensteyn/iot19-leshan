@@ -27,3 +27,6 @@ bin/
 
 # editor files
 .*.sw?
+
+# private key file
+private.key
