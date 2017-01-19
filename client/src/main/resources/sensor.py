@@ -28,7 +28,7 @@ def fakeProgram():
         val = random.choice("FU")
         sys.stdout.write(val)
         sys.stdout.flush()
-        time.sleep(1)
+        time.sleep(5)
 
 def piProgram():
     # initialize the camera and grab a reference to the raw camera capture
