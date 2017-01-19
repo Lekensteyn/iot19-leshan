@@ -64,6 +64,7 @@ public class Client {
 		options.addOption("d", "discover", false,
 				"Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
 		options.addOption("n", "number", true, "Device number. Default: 1.");
+		options.addOption("r", "room", true, "Room Id. Default not set (must be set by broker).");
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setOptionComparator(null);
 
@@ -104,9 +105,16 @@ public class Client {
 			}
 		}
 
+		// Set device number (required for multiple instances of a device type).
 		int deviceNumber = 1;
 		if (cl.hasOption("n")) {
 			deviceNumber = Integer.valueOf(cl.getOptionValue("n"));
+		}
+
+		// Initial room Id.
+		String roomId = "";
+		if (cl.hasOption("r")) {
+			roomId = cl.getOptionValue("r");
 		}
 
 		boolean discover = cl.hasOption("d");
@@ -156,7 +164,7 @@ public class Client {
 			return;
 		}
 
-		createClient(endpoint, coapServerURI, mqttServerURI, isSensor);
+		createClient(endpoint, coapServerURI, mqttServerURI, isSensor, roomId);
 	}
 
 	private static void loadSpec(List<ObjectModel> models, String resourceName) {
@@ -173,7 +181,8 @@ public class Client {
 		}
 	}
 
-	public static void createClient(String endpoint, URI coapServerURI, URI mqttServerURI, boolean isSensor) {
+	public static void createClient(String endpoint, URI coapServerURI, URI mqttServerURI, boolean isSensor,
+			String roomId) {
 		// Load LWM2M specs (include default OMA objects for Firmware profile)
 		List<ObjectModel> models = new ArrayList<>();
 		loadSpec(models, "/oma-objects-spec.json");
@@ -191,12 +200,14 @@ public class Client {
 
 		// register other Objects by their ID
 		final MqttClientUser mqttClientUser;
+		SensorDevice sensorDevice = null;
+		LightDevice lightDevice = null;
 		if (isSensor) {
-			SensorDevice sensorDevice = new SensorDevice(endpoint);
+			sensorDevice = new SensorDevice(endpoint);
 			initializer.setInstancesForObject(SENSOR_PROFILE_ID, sensorDevice);
 			mqttClientUser = sensorDevice;
 		} else {
-			LightDevice lightDevice = new LightDevice(endpoint);
+			lightDevice = new LightDevice(endpoint);
 			initializer.setInstancesForObject(LIGHT_PROFILE_ID, lightDevice);
 			mqttClientUser = lightDevice;
 		}
@@ -216,6 +227,13 @@ public class Client {
 		builder.setObjects(enablers);
 		final LeshanClient client = builder.build();
 		client.start();
+
+		// Set room Id after starting LWM2M (maybe this can be done earlier?)
+		if (isSensor) {
+			sensorDevice.setRoomId(roomId);
+		} else {
+			lightDevice.setRoomId(roomId);
+		}
 
 		// De-register on shutdown and stop client.
 		Runtime.getRuntime().addShutdownHook(new Thread() {
