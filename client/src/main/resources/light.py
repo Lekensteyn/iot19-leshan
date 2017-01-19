@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Sets the light state based on commands from input.
 # See RPiLightDevice.java
 
+import logging
 import sys
 try:
     from sense_hat import SenseHat
@@ -12,27 +13,31 @@ except ImportError as e:
     sys.stderr.flush()
     use_pi = False
 
+_logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
 if not use_pi:
     # SenseHat not available, mock something.
     class SenseHat(object):
         def clear(self, r, g, b):
-            self._log("clear(%r, %r, %r)" % (r, g, b))
+            _logger.info("clear(%r, %r, %r)", r, g, b)
 
         def __setattr__(self, name, value):
-            self._log("%s = %r" % (name, value))
-
-        def _log(self, msg):
-            # For testing purposes, will write a line to console on Linux
-            sys.stderr.write(msg + "\n")
-            sys.stderr.flush()
+            _logger.info("%s = %r", name, value)
 
 sense = SenseHat()
+_logger.info("SenseHat ready, lights off!")
+sense.clear(0, 0, 0)
 
 for line in sys.stdin:
     command, args = line.strip().split(" ", 1)
     if command == "color":
         r, g, b = map(int, args.split())
+        _logger.info("Setting color to (%r, %r, %r)", r, g, b)
         sense.clear(r, g, b)
     elif command == "lowlight":
         lowLight = args == "true"
+        _logger.info("Setting low light mode to %r", lowLight)
         sense.low_light = lowLight
+    else:
+        _logger.warn("Unrecognized command %r %r", command, args)
