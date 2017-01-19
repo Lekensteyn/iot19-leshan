@@ -181,6 +181,9 @@ def apply_light_setting(info, delay=False):
     any_user_present_now = any(is_occupied
             for is_occupied in sensors_occupied.values())
 
+    _logger.info("present_now=%r, sensors_occupied=%r", any_user_present_now,
+            sensors_occupied);
+
     if info == current_setting and any_user_present == any_user_present_now:
         _logger.info("Nothing to do, situation is unchanged")
         return
@@ -244,6 +247,8 @@ def main():
                 set_sensor_occupied(sensor_id, occupied == "true")
             elif cmd == "user3":
                 set_user3(args)
+            else:
+                _logger.warn("Unrecognized command %r %r", cmd, args)
         except Exception as e:
             _logger.exception("Error while processing %s", line)
 
