@@ -102,7 +102,11 @@ public class Client {
 			if (addresses.size() > 1) {
 				LOG.warn("Found multiple LWM2M servers, will use the first one.");
 			}
-			serverURI = "coap://" + addresses.get(0) + ":5683";
+			String host = addresses.get(0);
+			if (host.contains(":")) {
+				host = "[" + host + "]";
+			}
+			serverURI = "coap://" + host + ":5683";
 			LOG.info("Using discovered LWM2M server: " + serverURI);
 		}
 
