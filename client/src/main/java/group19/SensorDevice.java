@@ -162,11 +162,24 @@ public class SensorDevice extends BaseInstanceEnabler implements SensorChangeLis
 		}
 		String topic = String.format("TUE/%s/Sensor/%s/State", roomId, sensorId);
 		byte[] payload = sensorState.name().getBytes();
-		try {
-			mqttClient.publish(topic, payload, 0, false);
-			LOG.info("Published to MQTT topic {}: {}", topic, sensorState.name());
-		} catch (MqttException e) {
-			LOG.warn("Failed to publish sensor state", e);
+		for (int attempt = 1; attempt <= 2; attempt++) {
+			try {
+				mqttClient.publish(topic, payload, 0, false);
+				LOG.info("Published to MQTT topic {}: {}", topic, sensorState.name());
+				return;
+			} catch (MqttException e) {
+				LOG.warn("Failed to publish sensor state, code {}", e.getReasonCode(), e);
+				if (attempt == 2) {
+					LOG.warn("First attempt failed, giving up on publishing.");
+				} else if (e.getReasonCode() == MqttException.REASON_CODE_CLIENT_NOT_CONNECTED) {
+					try {
+						LOG.info("Trying to reconnect...");
+						mqttClient.reconnect();
+					} catch (MqttException e2) {
+						LOG.warn("Failed to reconnect to client", e2);
+					}
+				}
+			}
 		}
 	}
 

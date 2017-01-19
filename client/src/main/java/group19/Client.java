@@ -21,6 +21,7 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.apache.commons.cli.CommandLine;
@@ -104,7 +105,7 @@ public class Client {
 			}
 			// TODO handle IPv6 addresses
 			String host = null;
-			for	(String address : addresses) {
+			for (String address : addresses) {
 				if (!address.contains(":")) {
 					host = address;
 					break;
@@ -215,8 +216,10 @@ public class Client {
 		try {
 			final MqttAsyncClient mqttClient = new MqttAsyncClient(mqttServerURI.toString(), endpoint,
 					new MemoryPersistence());
+			MqttConnectOptions mqttOptions = new MqttConnectOptions();
+			mqttOptions.setAutomaticReconnect(true);
 			LOG.info("Trying to connect to MQTT broker: " + mqttServerURI);
-			mqttClient.connect(null, new IMqttActionListener() {
+			mqttClient.connect(mqttOptions, null, new IMqttActionListener() {
 
 				@Override
 				public void onSuccess(IMqttToken token) {
