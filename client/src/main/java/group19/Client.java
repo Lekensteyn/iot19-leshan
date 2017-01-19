@@ -41,7 +41,7 @@ public class Client {
 		// System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY,
 		// "Debug");
 		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
-		System.setProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss.S");
+		System.setProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss.SSS");
 	}
 
 	private final static Logger LOG = LoggerFactory.getLogger(Client.class);
