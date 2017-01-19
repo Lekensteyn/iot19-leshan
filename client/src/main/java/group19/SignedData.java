@@ -1,16 +1,25 @@
 package group19;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -179,5 +188,176 @@ public class SignedData {
 		} catch (IllegalArgumentException e) {
 			throw new IOException("Invalid keyfile contents", e);
 		}
+	}
+
+	private static byte[] readFile(String inputFile) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try (FileInputStream is = new FileInputStream(inputFile)) {
+			byte[] buffer = new byte[4096];
+			int n;
+			while ((n = is.read(buffer)) != -1) {
+				bos.write(buffer, 0, n);
+			}
+		}
+		return bos.toByteArray();
+	}
+
+	private static void printUsage(String errorMessage) {
+		String usage = String.format("Usage: java -cp client.jar %s {genkey|sign|verify} [OPTIONS]",
+				SignedData.class.getCanonicalName());
+		if (errorMessage != null) {
+			System.err.println(errorMessage);
+			System.err.println(usage);
+			System.exit(1);
+		} else {
+			System.out.println(usage);
+			System.exit(0);
+		}
+	}
+
+	public static void main(String[] args) {
+		if (args.length == 0) {
+			printUsage("Missing command");
+		}
+
+		boolean success = false;
+		switch (args[0]) {
+		case "genkey":
+			// "genkey": writes pubkey and privkey to stdout
+			if (args.length != 3) {
+				printUsage("Options for genkey: privKeyOutFile pubKeyOutFile");
+			}
+			String privKeyOutFile = args[1];
+			String pubKeyOutFile = args[2];
+			success = doGenKey(privKeyOutFile, pubKeyOutFile);
+			break;
+		case "sign":
+			if (args.length != 4) {
+				printUsage("Options for sign: privKeyFile inputFile outputFile");
+			}
+			String privKeyFile = args[1];
+			String inputFile = args[2];
+			String outputFile = args[3];
+			success = doSign(privKeyFile, inputFile, outputFile);
+			break;
+		case "verify":
+			if (args.length != 3) {
+				printUsage("Options for verify: pubKeyFile inputFile");
+			}
+			String pubKeyFile = args[1];
+			inputFile = args[2];
+			success = doVerify(pubKeyFile, inputFile);
+			break;
+		case "help":
+			printUsage(null);
+			break;
+		default:
+			printUsage("Unrecognized command: " + args[0]);
+		}
+		System.exit(success ? 0 : 1);
+	}
+
+	private static boolean doGenKey(String privKeyOutFile, String pubKeyOutFile) {
+		try {
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+			// Default is (SECG) "secp256r1" a.k.a "NIST P-256"/"prime256v1".
+			// (Ed25519 is unfortunately not available.)
+			kpg.initialize(new ECGenParameterSpec("secp256r1"));
+
+			KeyPair kp = kpg.generateKeyPair();
+			PrivateKey privKey = kp.getPrivate();
+			PublicKey pubKey = kp.getPublic();
+			String privKeyB64 = DatatypeConverter.printBase64Binary(privKey.getEncoded());
+			String pubKeyB64 = DatatypeConverter.printBase64Binary(pubKey.getEncoded());
+
+			try (PrintStream privOut = new PrintStream(privKeyOutFile)) {
+				privOut.println(privKeyB64);
+				System.out.println("Wrote private key to " + privKeyOutFile);
+			} catch (FileNotFoundException e) {
+				System.out.println("Unable to write private key: " + e);
+				return false;
+			}
+			try (PrintStream pubOut = new PrintStream(pubKeyOutFile)) {
+				pubOut.println(pubKeyB64);
+				System.out.println("Wrote public key to " + pubKeyOutFile);
+			} catch (FileNotFoundException e) {
+				System.out.println("Unable to write public key: " + e);
+				return false;
+			}
+			return true;
+		} catch (GeneralSecurityException e) {
+			System.err.println("Key generation failed: " + e);
+			return false;
+		}
+	}
+
+	private static boolean doSign(String privKeyFile, String inputFile, String outputFile) {
+		PrivateKey privKey;
+		try {
+			byte[] privKeyData = loadBase64FromStream(new FileInputStream(privKeyFile));
+			privKey = KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(privKeyData));
+		} catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
+			System.err.println("Unable to load private key: " + e);
+			return false;
+		}
+
+		byte[] inputData;
+		try {
+			inputData = readFile(inputFile);
+		} catch (IOException e) {
+			System.err.println("Unable to read input file: " + e);
+			return false;
+		}
+
+		SignedData signedData = new SignedData(inputData);
+		try {
+			signedData.sign(privKey);
+		} catch (SignatureException e) {
+			System.err.println("Could not sign file: " + e);
+			return false;
+		}
+		String signatureB64 = DatatypeConverter.printBase64Binary(signedData.getSignature());
+
+		try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+			outputStream.write(inputData);
+			outputStream.write('#');
+			outputStream.write(signatureB64.getBytes());
+			outputStream.write('\n');
+		} catch (IOException e) {
+			System.err.println("Could not save signed file: " + e);
+			return false;
+		}
+		System.out.println("Wrote signed file to " + outputFile);
+		return true;
+	}
+
+	private static boolean doVerify(String pubKeyFile, String inputFile) {
+		PublicKey pubKey;
+		try {
+			byte[] pubKeyData = loadBase64FromStream(new FileInputStream(pubKeyFile));
+			pubKey = loadPublicKey(pubKeyData);
+		} catch (GeneralSecurityException | IOException e) {
+			System.err.println("Unable to load public key: " + e);
+			return false;
+		}
+
+		byte[] inputData;
+		try {
+			inputData = readFile(inputFile);
+		} catch (IOException e) {
+			System.err.println("Unable to read input file: " + e);
+			return false;
+		}
+
+		try {
+			SignedData signedData = SignedData.load(inputData);
+			signedData.verify(pubKey);
+		} catch (SignatureException e) {
+			System.err.println(e);
+			return false;
+		}
+
+		System.out.println("Verified signature of " + inputFile);
+		return true;
 	}
 }
