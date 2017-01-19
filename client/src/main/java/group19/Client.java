@@ -63,6 +63,7 @@ public class Client {
 		options.addOption("t", "type", true, "Set the device type (light or sensor).\nDefault: light.");
 		options.addOption("d", "discover", false,
 				"Discover the LWM2M server through mDNS-SD (ignores the --server parameter).");
+		options.addOption("n", "number", true, "Device number. Default: 1.");
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setOptionComparator(null);
 
@@ -103,6 +104,11 @@ public class Client {
 			}
 		}
 
+		int deviceNumber = 1;
+		if (cl.hasOption("n")) {
+			deviceNumber = Integer.valueOf(cl.getOptionValue("n"));
+		}
+
 		boolean discover = cl.hasOption("d");
 		if (discover) {
 			List<String> addresses = ServiceDiscovery.findAddresses();
@@ -129,7 +135,7 @@ public class Client {
 			LOG.info("Using discovered LWM2M server: " + serverURI);
 		}
 
-		String endpoint = String.format("%s-Device-%d-1", isSensor ? "Sensor" : "Light", GROUP_NO);
+		String endpoint = String.format("%s-Device-%d-%d", isSensor ? "Sensor" : "Light", GROUP_NO, deviceNumber);
 		URI coapServerURI, mqttServerURI;
 		try {
 			coapServerURI = new URI(serverURI);
