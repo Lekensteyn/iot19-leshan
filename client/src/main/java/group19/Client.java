@@ -127,7 +127,8 @@ public class Client {
 			if (addresses.size() > 1) {
 				LOG.warn("Found multiple LWM2M servers, will use the first one.");
 			}
-			// TODO handle IPv6 addresses
+			// TODO Accept IPv6 addresses. Disabled due to limitation of Paho:
+			// https://github.com/eclipse/paho.mqtt.java/issues/322
 			String host = null;
 			for (String address : addresses) {
 				if (!address.contains(":")) {
