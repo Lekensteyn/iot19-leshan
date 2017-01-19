@@ -22,6 +22,7 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -197,8 +198,11 @@ public class Client {
 		});
 
 		// Register MQTT client to update SmartLight or publish sensor data.
+		// Use MemoryPersistence since we do not care about reliability across
+		// client restarts.
 		try {
-			final MqttAsyncClient mqttClient = new MqttAsyncClient(mqttServerURI.toString(), endpoint);
+			final MqttAsyncClient mqttClient = new MqttAsyncClient(mqttServerURI.toString(), endpoint,
+					new MemoryPersistence());
 			LOG.info("Trying to connect to MQTT broker: " + mqttServerURI);
 			mqttClient.connect(null, new IMqttActionListener() {
 
