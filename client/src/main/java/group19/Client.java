@@ -102,9 +102,17 @@ public class Client {
 			if (addresses.size() > 1) {
 				LOG.warn("Found multiple LWM2M servers, will use the first one.");
 			}
-			String host = addresses.get(0);
-			if (host.contains(":")) {
-				host = "[" + host + "]";
+			// TODO handle IPv6 addresses
+			String host = null;
+			for	(String address : addresses) {
+				if (!address.contains(":")) {
+					host = address;
+					break;
+				}
+			}
+			if (host == null) {
+				LOG.error("Unable to find IPv4 host");
+				return;
 			}
 			serverURI = "coap://" + host + ":5683";
 			LOG.info("Using discovered LWM2M server: " + serverURI);
