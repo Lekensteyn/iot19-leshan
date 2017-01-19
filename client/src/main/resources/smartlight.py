@@ -223,6 +223,8 @@ def apply_light_setting(info, delay=False):
     current_setting = info
     any_user_present = any_user_present_now
     sys.stdout.flush()
+    _logger.info("New state: present=%r setting=%r", any_user_present,
+            current_setting)
 
 
 def main():
