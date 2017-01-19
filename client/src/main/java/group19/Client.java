@@ -32,10 +32,20 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.leshan.LwM2mId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLogger;
 
 public class Client {
+	static {
+		// -Dorg.slf4j.simpleLogger.showDateTime=true
+		// -Dorg.slf4j.simpleLogger.dateTimeFormat="yyyy-MM-dd HH:mm:ss.S"
+		// System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY,
+		// "Debug");
+		System.setProperty(SimpleLogger.SHOW_DATE_TIME_KEY, "true");
+		System.setProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss.S");
+	}
 
 	private final static Logger LOG = LoggerFactory.getLogger(Client.class);
+
 	private final static String USAGE = "java -jar client.jar [OPTIONS]";
 
 	public final static int LIGHT_PROFILE_ID = 10250;
